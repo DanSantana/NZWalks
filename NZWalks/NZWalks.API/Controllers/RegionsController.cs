@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using NZWalks.API.Data;
 using NZWalks.API.Model.Domain;
+using NZWalks.API.Model.DTO;
 
 namespace NZWalks.API.Controllers
 {
@@ -20,11 +21,16 @@ namespace NZWalks.API.Controllers
         {
             try
             {
-                var regions = dbContext.Regions.ToList();
-                return Ok(regions);
+                var regionsDomain = dbContext.Regions.ToList();
+                var regionDtos = new List<RegionDto>();
+                foreach (var region in regionsDomain)
+                {
+                    regionDtos.Add(SerializeToDto(region));
+                }
+                return Ok(regionDtos);
             }
             catch (Exception e)
-            {                
+            {
                 return NotFound(new { e.Message });
             }
         }
@@ -34,11 +40,44 @@ namespace NZWalks.API.Controllers
         public IActionResult GetById([FromRoute] Guid id)
         {
             var region = dbContext.Regions.FirstOrDefault(r => r.Id == id);
-
             if (region == null)
-                return NotFound();            
+                return NotFound();
 
-         return Ok(region);
+            return Ok(SerializeToDto(region));
+        }
+
+        [HttpPost]
+        public IActionResult Create([FromBody] AddRegionDto regionDto)
+        {
+            var regionDomain = new Region
+            {
+                Code = regionDto.Code,
+                Name = regionDto.Name,
+                RegionImageUrl = regionDto.RegionImageUrl
+            };
+            dbContext.Regions.Add(regionDomain);
+            dbContext.SaveChanges();
+
+            var newRegionDto = new RegionDto
+            {
+                Id = regionDomain.Id,
+                Name = regionDomain.Name,
+                Code = regionDomain.Code,
+                RegionImageUrl = regionDomain.RegionImageUrl
+            };
+
+            return CreatedAtAction(nameof(GetById), new { id = newRegionDto.Id }, regionDto);
+        }
+
+        private RegionDto SerializeToDto(Region region)
+        {
+            return new RegionDto
+            {
+                Id = region.Id,
+                Code = region.Code,
+                Name = region.Name,
+                RegionImageUrl = region.RegionImageUrl
+            };
         }
 
 

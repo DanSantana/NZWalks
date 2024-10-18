@@ -47,7 +47,7 @@ namespace NZWalks.API.Controllers
         }
 
         [HttpPost]
-        public IActionResult Create([FromBody] AddRegionDto regionDto)
+        public IActionResult Create([FromBody] AddRegionRequestDto regionDto)
         {
             var regionDomain = new Region
             {
@@ -68,6 +68,32 @@ namespace NZWalks.API.Controllers
 
             return CreatedAtAction(nameof(GetById), new { id = newRegionDto.Id }, regionDto);
         }
+
+        [HttpPut]
+        [Route("{id:Guid}")]
+        public IActionResult Update([FromRoute] Guid id, [FromBody] UpdateRegionRequestDto updateDtoReques)
+        {
+            // validar id
+            var regionDomain = dbContext.Regions.FirstOrDefault(r=>r.Id == id);
+            if (regionDomain == null)
+            {
+                return NotFound();
+            }
+            //Map dto to domain
+            regionDomain.Name = updateDtoReques.Name;
+            regionDomain.Code = updateDtoReques.Code;
+            regionDomain.RegionImageUrl = updateDtoReques.RegionImageUrl;           
+
+            // save
+            dbContext.SaveChanges();
+            //dto re map
+            var newRegionDto = SerializeToDto(regionDomain);
+
+            // return dto
+            return Ok(newRegionDto);
+        }
+
+
 
         private RegionDto SerializeToDto(Region region)
         {

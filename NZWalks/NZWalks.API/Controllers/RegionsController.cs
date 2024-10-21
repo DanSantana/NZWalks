@@ -104,7 +104,9 @@ namespace NZWalks.API.Controllers
             dbContext.Regions.Remove(regionDomain);
             dbContext.SaveChanges();
 
-            return Ok($"Region with id: {id} was deleted with success.");
+            var RegionDto = SerializeToDto(regionDomain);
+
+            return Ok($"Region with was deleted with success. \n {System.Text.Json.JsonSerializer.Serialize(RegionDto)}");
         }
 
 

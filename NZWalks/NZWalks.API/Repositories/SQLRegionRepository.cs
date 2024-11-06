@@ -21,9 +21,16 @@ namespace NZWalks.API.Repositories
             return region;
         }
 
-        public Task<Region> DeleteAsync(Guid Id)
+        public async Task<Region?> DeleteAsync(Guid Id)
         {
-            throw new NotImplementedException();
+            var existendRegion = await dbContext.Regions.FirstOrDefaultAsync(x => x.Id == Id);
+            if (existendRegion == null)
+                return null;
+
+            dbContext.Regions.Remove(existendRegion);
+            await dbContext.SaveChangesAsync();
+
+            return existendRegion;
         }
 
         public Task<List<Region>> GetAllAsync()
@@ -37,16 +44,16 @@ namespace NZWalks.API.Repositories
         public async Task<Region?> UpdateAsync(Guid Id, Region region)
         {
             var existingRegion = await dbContext.Regions.FirstOrDefaultAsync(x=> x.Id == Id);
-            if (region == null)
+            if (existingRegion == null)
             {
                 return null;
             }
-            existingRegion.Name = region.Name.ToString();
+            existingRegion.Name = region.Name;
             existingRegion.Code = region.Code;
             existingRegion.RegionImageUrl = region.RegionImageUrl;
 
             await dbContext.SaveChangesAsync();
-             return existingRegion;
+            return existingRegion;
         }
       
 

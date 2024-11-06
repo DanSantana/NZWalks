@@ -91,9 +91,10 @@ namespace NZWalks.API.Controllers
         public async Task<IActionResult> Delete([FromRoute] Guid id)
         {
             var regionDomain = await regionRepository.DeleteAsync(id);
+            if (regionDomain == null)
+                return NotFound();
 
             var RegionDto = SerializeToDto(regionDomain);
-
             return Ok($"Region with was deleted with success. \n {System.Text.Json.JsonSerializer.Serialize(RegionDto)}");
         }
 
